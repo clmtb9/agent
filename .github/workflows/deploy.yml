@@ -33,8 +33,11 @@ jobs:
         run: npm run build
         env:
           GITHUB_PAGES: 'true'
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Secrets du repo s'ils existent, sinon valeurs par défaut.
+          # La clé anon Supabase est PUBLIQUE par design (embarquée dans le bundle JS
+          # de toute façon) — la sécurité est assurée par la RLS sur toutes les tables.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://pqehebvoaguoekvynxbt.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxZWhlYnZvYWd1b2VrdnlueGJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIwNzU3MzAsImV4cCI6MjEwNzY1MTczMH0.I23naGXApGdBD6JWUETzVxeLnQXFxCvJ4K5WfaTZUiA' }}
 
       - uses: actions/configure-pages@v5
 
