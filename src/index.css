@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+}
+
+/* Safe-area iOS/Android pour la barre de navigation du bas */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Scrollbar discrète */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-400/40 rounded-full;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
