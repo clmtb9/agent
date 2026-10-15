@@ -12,9 +12,11 @@ export default function Auth() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    // origin + base path (import.meta.env.BASE_URL = '/agent/' sur GitHub Pages, '/' en local)
+    const redirectTo = window.location.origin + import.meta.env.BASE_URL
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: redirectTo },
     })
     setLoading(false)
     if (error) setError(error.message)
