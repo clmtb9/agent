@@ -3,6 +3,7 @@
 // Appelée par le front après chaque création / modification de note.
 // Body : { note_id?: string, title: string, content: string }
 // Modèle : gemini-embedding-001 (3072 dimensions)
+// Chat : gemini-3.8-flash (gemini-2.0-flash retiré par Google)
 // ============================================================================
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'

@@ -17,7 +17,7 @@ const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
 
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta'
 const EMBED_MODEL = 'gemini-embedding-001'
-const CHAT_MODEL = 'gemini-2.0-flash'
+const CHAT_MODEL = 'gemini-3.8-flash'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
