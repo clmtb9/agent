@@ -1,17 +1,23 @@
 // ============================================================================
-// Edge Function : ai-chat — Assistant IA contextuel (RAG)
-// Déployer : supabase functions deploy ai-chat
-// Secrets requis :
-//   supabase secrets set OPENAI_API_KEY=sk-...
+// Edge Function : ai-chat — Assistant IA contextuel (RAG) via Google Gemini
+// Tier gratuit Gemini : 1 500 requêtes/jour — largement suffisant en perso.
+//
+// Secret requis :
+//   Dashboard Supabase → Edge Functions → Secrets → GEMINI_API_KEY=AIza...
+//
 // La fonction reçoit le JWT utilisateur (verify_jwt) et crée un client
 // Supabase "as user" => la RLS s'applique : l'IA ne voit que TES données.
 // ============================================================================
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')!
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
+
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta'
+const EMBED_MODEL = 'gemini-embedding-001'
+const CHAT_MODEL = 'gemini-2.0-flash'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,17 +27,17 @@ const corsHeaders = {
 type HistoryMsg = { role: 'user' | 'assistant'; content: string }
 
 async function embed(text: string): Promise<number[]> {
-  const res = await fetch('https://api.openai.com/v1/embeddings', {
+  const res = await fetch(`${GEMINI_BASE}/models/${EMBED_MODEL}:embedContent?key=${GEMINI_API_KEY}`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ model: 'text-embedding-3-small', input: text.slice(0, 8000) }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: `models/${EMBED_MODEL}`,
+      content: { parts: [{ text: text.slice(0, 8000) }] },
+    }),
   })
-  if (!res.ok) throw new Error(`OpenAI embeddings: ${res.status} ${await res.text()}`)
+  if (!res.ok) throw new Error(`Gemini embeddings: ${res.status} ${await res.text()}`)
   const json = await res.json()
-  return json.data[0].embedding as number[]
+  return json.embedding.values as number[]
 }
 
 serve(async (req) => {
@@ -106,7 +112,7 @@ serve(async (req) => {
       console.warn('RAG indisponible (notes sans embeddings ?):', e)
     }
 
-    // ---------- 4. Appel LLM ----------
+    // ---------- 4. Appel Gemini ----------
     const systemPrompt = `Tu es le "second cerveau" personnel de l'utilisateur, un assistant structuré autour de sa méthode Mandala Chart.
 Tu parles en français, de façon concise, directe et bienveillante. Tu es un coach pragmatique.
 
@@ -131,26 +137,30 @@ CONSIGNES :
 - "suggested_tasks" peut être un tableau vide. Ne suggère rien qui existe déjà dans les tâches en cours.
 - Date du jour : ${new Date().toISOString().slice(0, 10)}.`
 
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Format Gemini : systemInstruction + contents (role "model" pour l'assistant)
+    const contents = [
+      ...history.map((m) => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }],
+      })),
+      { role: 'user', parts: [{ text: message }] },
+    ]
+
+    const res = await fetch(`${GEMINI_BASE}/models/${CHAT_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        response_format: { type: 'json_object' },
-        temperature: 0.4,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...history.map((m) => ({ role: m.role, content: m.content })),
-          { role: 'user', content: message },
-        ],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents,
+        generationConfig: {
+          temperature: 0.4,
+          responseMimeType: 'application/json',
+        },
       }),
     })
-    if (!res.ok) throw new Error(`OpenAI chat: ${res.status} ${await res.text()}`)
+    if (!res.ok) throw new Error(`Gemini chat: ${res.status} ${await res.text()}`)
     const json = await res.json()
-    const raw = json.choices[0].message.content as string
+    const raw: string = json.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 
     let parsed: { answer?: string; suggested_tasks?: unknown[] }
     try {

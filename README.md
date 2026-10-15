@@ -7,7 +7,7 @@ PWA d'assistant personnel structurée autour de la méthode **Mandala Chart** (1
 - **Frontend** : React 18 + TypeScript + Vite + Tailwind CSS + Lucide Icons
 - **PWA** : vite-plugin-pwa (manifest, service worker, notifications locales)
 - **Backend** : Supabase (PostgreSQL, Auth magic link, RLS, pgvector, Edge Functions Deno)
-- **IA** : OpenAI via Edge Functions (clés jamais exposées au client)
+- **IA** : Google Gemini via Edge Functions (tier gratuit ~1 500 req/jour, clés jamais exposées au client)
 - **Data** : @tanstack/react-query + @supabase/supabase-js
 
 ## Structure
@@ -54,17 +54,23 @@ npm install
 npm run dev
 ```
 
-### 3. Edge Functions (IA)
+### 3. Edge Functions (IA — Gemini, gratuit)
+
+1. Crée une clé API Gemini gratuite sur [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+2. SQL Editor → exécute **supabase/migration_gemini.sql** (passe les embeddings en 3072 dims)
+3. Déploie les fonctions :
 
 ```bash
 npm i -g supabase
 supabase login
 supabase link --project-ref <ton-project-ref>
-supabase secrets set OPENAI_API_KEY=sk-...
+supabase secrets set GEMINI_API_KEY=AIza...
 supabase functions deploy ai-chat
 supabase functions deploy embed-note
 ```
 
+> Sans CLI : Dashboard → Edge Functions → crée `ai-chat` et `embed-note`, colle le code,
+> puis Edge Functions → Secrets → ajoute `GEMINI_API_KEY`.
 > Sans les fonctions déployées, l'app fonctionne — seul l'onglet IA affiche un message d'erreur explicite.
 
 ## Modèle de données
@@ -74,7 +80,7 @@ supabase functions deploy embed-note
 | `profiles` | Profil (créé automatiquement à l'inscription) |
 | `mandala_goals` | Arbre 3 niveaux : `center` → `domain` (B1-B8) → `action` (x.x) |
 | `tasks` | Tâches : priorité `p1`-`p4`, échéance, lien `goal_id`, source `manual`/`ai` |
-| `notes` | Second cerveau : Markdown + `embedding vector(1536)` + index HNSW |
+| `notes` | Second cerveau : Markdown + `embedding vector(3072)` + index HNSW |
 | `journal_entries` | Journal daté : humeur, score de progression, domaine lié |
 
 RLS activée partout : `auth.uid() = user_id`. La recherche sémantique (`match_notes`) s'exécute en `SECURITY INVOKER` → chacun ne fouille que ses propres notes.

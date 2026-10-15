@@ -1,13 +1,13 @@
 // ============================================================================
-// Edge Function : embed-note — calcule et stocke l'embedding d'une note
+// Edge Function : embed-note — calcule et stocke l'embedding Gemini d'une note
 // Appelée par le front après chaque création / modification de note.
 // Body : { note_id?: string, title: string, content: string }
-// Déployer : supabase functions deploy embed-note
+// Modèle : gemini-embedding-001 (3072 dimensions)
 // ============================================================================
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')!
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
@@ -46,18 +46,21 @@ serve(async (req) => {
       })
     }
 
-    // Embedding OpenAI
-    const res = await fetch('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
+    // Embedding Gemini (3072 dims)
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'models/gemini-embedding-001',
+          content: { parts: [{ text: text.slice(0, 8000) }] },
+        }),
       },
-      body: JSON.stringify({ model: 'text-embedding-3-small', input: text.slice(0, 8000) }),
-    })
-    if (!res.ok) throw new Error(`OpenAI embeddings: ${res.status} ${await res.text()}`)
+    )
+    if (!res.ok) throw new Error(`Gemini embeddings: ${res.status} ${await res.text()}`)
     const json = await res.json()
-    const embedding = json.data[0].embedding as number[]
+    const embedding = json.embedding.values as number[]
 
     // Mise à jour de la note (service role : la note vient d'être créée côté user,
     // on borne la mise à jour à l'utilisateur appelant par sécurité)

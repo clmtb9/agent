@@ -117,7 +117,7 @@ export default function SecondBrainChat() {
         {
           role: 'assistant',
           content:
-            "⚠️ Impossible de joindre l'assistant IA. Vérifie que l'Edge Function `ai-chat` est déployée (supabase/functions/ai-chat) et que OPENAI_API_KEY est configurée.",
+            "⚠️ Impossible de joindre l'assistant IA. Vérifie que l'Edge Function `ai-chat` est déployée (supabase/functions/ai-chat) et que GEMINI_API_KEY est configurée dans Edge Functions → Secrets.",
         },
       ])
     } finally {
