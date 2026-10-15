@@ -287,7 +287,7 @@ export default function SecondBrainChat() {
               </button>
             )}
             <button
-              onClick={sendMessage}
+              onClick={() => sendMessage()}
               disabled={!input.trim() || thinking}
               className="self-end rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 p-3 disabled:opacity-50 transition-colors"
             >
