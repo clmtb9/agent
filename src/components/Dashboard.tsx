@@ -106,7 +106,7 @@ export default function Dashboard() {
           e.preventDefault()
           if (newTitle.trim()) addTask.mutate()
         }}
-        className="flex gap-2"
+        className="flex flex-col sm:flex-row gap-2"
       >
         <input
           value={newTitle}
@@ -114,22 +114,24 @@ export default function Dashboard() {
           placeholder="Nouvelle tâche pour aujourd'hui…"
           className="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
         />
-        <select
-          value={newPriority}
-          onChange={(e) => setNewPriority(e.target.value as TaskPriority)}
-          className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-sm"
-        >
-          {PRIORITIES.map((p) => (
-            <option key={p.id} value={p.id}>{p.label}</option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          disabled={!newTitle.trim() || addTask.isPending}
-          className="rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 px-3.5 disabled:opacity-50 transition-colors"
-        >
-          <Plus size={18} />
-        </button>
+        <div className="flex gap-2">
+          <select
+            value={newPriority}
+            onChange={(e) => setNewPriority(e.target.value as TaskPriority)}
+            className="flex-1 sm:flex-none rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-sm"
+          >
+            {PRIORITIES.map((p) => (
+              <option key={p.id} value={p.id}>{p.label}</option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            disabled={!newTitle.trim() || addTask.isPending}
+            className="rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 disabled:opacity-50 transition-colors"
+          >
+            <Plus size={18} />
+          </button>
+        </div>
       </form>
 
       {/* Filtre par domaine du Mandala */}

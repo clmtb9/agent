@@ -47,7 +47,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col">
       {/* Barre du haut */}
       <header className="sticky top-0 z-10 bg-white/80 dark:bg-slate-950/80 backdrop-blur border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-4 h-14">
+        <div className="max-w-3xl mx-auto flex items-center justify-between px-3 sm:px-4 h-12 sm:h-14">
           <div className="flex items-center gap-2 font-bold">
             <div className="grid grid-cols-3 gap-0.5 w-6 h-6">
               {Array.from({ length: 9 }).map((_, i) => (
@@ -70,7 +70,7 @@ export default function App() {
       </header>
 
       {/* Contenu */}
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-5 pb-24">
+      <main className="flex-1 w-full max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-5 pb-24">
         {tab === 'dashboard' && <Dashboard />}
         {tab === 'mandala' && <MandalaGrid />}
         {tab === 'brain' && <SecondBrainChat />}
@@ -84,7 +84,7 @@ export default function App() {
             <button
               key={id}
               onClick={() => setTab(id)}
-              className={`flex flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors ${
+              className={`flex flex-col items-center gap-0.5 sm:gap-1 py-2 sm:py-2.5 text-[11px] sm:text-xs font-medium transition-colors ${
                 tab === id
                   ? 'text-amber-600 dark:text-amber-400'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'

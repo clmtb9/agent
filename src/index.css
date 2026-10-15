@@ -22,3 +22,19 @@ body {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Empêche le zoom automatique iOS sur focus des champs (font-size < 16px) */
+input,
+textarea,
+select {
+  font-size: 16px !important;
+}
+
+/* Zones tactiles confortables sur mobile (guideline >= 40px) */
+@media (max-width: 640px) {
+  button,
+  select,
+  input[type='checkbox'] {
+    min-height: 40px;
+  }
+}

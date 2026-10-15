@@ -253,7 +253,7 @@ export default function SecondBrainChat() {
           )}
 
           {/* Champ de saisie */}
-          <div className="flex gap-2">
+          <div className="flex items-end gap-2">
             <textarea
               value={input}
               onChange={(e) => {
@@ -261,6 +261,9 @@ export default function SecondBrainChat() {
                 transcriptRef.current = e.target.value
                 // Frappe au clavier = l'utilisateur reprend la main → annule l'envoi auto
                 if (autoSendTimer.current) window.clearTimeout(autoSendTimer.current)
+                // Auto-resize : grandit avec le contenu, max 6 lignes
+                e.target.style.height = 'auto'
+                e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px'
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -269,9 +272,9 @@ export default function SecondBrainChat() {
                   sendMessage()
                 }
               }}
-              rows={2}
+              rows={1}
               placeholder={listening ? 'Je t\'écoute… (silence = envoi auto)' : 'Parle à ton second cerveau… (Entrée pour envoyer)'}
-              className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-500 overflow-y-auto"
             />
             {speechSupported && (
               <button
